@@ -38,12 +38,22 @@ plugins:
 
 nav:
   - Home: index.md
-  - Getting Started: getting-started.md
-  - API Reference:
-    - Core: api/core.md
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - Project Structure: getting-started/project-structure.md
+  - Data Version Control:
+    - Overview: data-version-control/overview.md
+    - Workflow: data-version-control/workflow.md
+  - ML Pipeline:
+    - Data Processing: ml-pipeline/data-processing.md
+    - Model Training: ml-pipeline/model-training.md
+    - Model Evaluation: ml-pipeline/model-evaluation.md
+    - Model Comparison: model-comparison/model_comparison.md
   - Development:
     - Contributing: development/contributing.md
     - Workflow: development/workflow.md
+  - API Reference:
+    - Core: api/core.md
 
 markdown_extensions:
   - pymdownx.highlight:

@@ -1,48 +1,50 @@
-# Welcome to MLOps Project
+# MLOps Project
 
-This is the documentation for the MLOps project, containing homework implementations for the MLOps course.
+Welcome to the MLOps project documentation! This project demonstrates modern MLOps practices for the ITMO University MLOps course.
 
-## Project Overview
+## Overview
 
-This project demonstrates modern MLOps practices including:
+This project showcases:
 
+- Data Version Control with DVC
+- ML Pipeline Development
+- CI/CD for ML Projects
+- Model Versioning and Deployment
+- Documentation as Code
+
+## Quick Links
+
+- [Installation Guide](getting-started/installation.md)
+- [Project Structure](getting-started/project-structure.md)
+- [DVC Workflow](data-version-control/workflow.md)
+- [ML Pipeline](ml-pipeline/data-processing.md)
+- [Contributing Guide](development/contributing.md)
+
+## Features
+
+### Data Version Control
+
+We use DVC for managing datasets and ML models, enabling:
+
+- Large file versioning
+- Experiment tracking
+- Reproducible ML pipelines
+- Team collaboration
+
+### ML Pipeline
+
+Our ML pipeline includes:
+
+1. Data Collection and Storage
+2. Data Processing and Feature Engineering
+3. Model Training and Validation
+4. Model Evaluation and Comparison
+
+### Development Practices
+
+We follow industry best practices:
+
+- Git Flow with DVC integration
 - Automated testing and linting
-- Containerization with Docker
-- CI/CD pipeline with GitHub Actions
-- Documentation with MkDocs
-- Dependency management with Poetry
-
-## Quick Start
-
-```bash
-# Clone the repository
-git clone https://github.com/EgorovM/itmo-mlops-2025
-cd mlops-project
-
-# Install dependencies with Poetry
-poetry install
-
-# Run tests
-poetry run pytest
-
-# Build and run with Docker
-docker-compose up
-```
-
-## Project Structure
-
-The project follows a standard Python package structure with additional MLOps components:
-
-```
-.
-├── src/               # Source code
-├── docs/              # Documentation
-├── tests/             # Test files
-├── .github/           # GitHub Actions workflows
-├── Dockerfile        # Container configuration
-└── docker-compose.yml # Local development setup
-```
-
-## API Documentation
-
-For detailed API documentation, please see the [API Reference](api/core.md) section.
+- Continuous Integration/Deployment
+- Documentation as Code

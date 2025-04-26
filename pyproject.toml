@@ -10,6 +10,11 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.11"
+dvc = "^3.48.1"
+pandas = "^2.2.1"
+scikit-learn = "^1.4.1.post1"
+numpy = "^1.26.4"
+seaborn = "^0.13.2"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.12.1"
@@ -20,6 +25,9 @@ pytest = "^7.4.3"
 mypy = "^1.8.0"
 pre-commit = "^3.6.0"
 isort = "^5.13.2"
+jupyter = "^1.0.0"
+notebook = "^7.1.1"
+types-seaborn = "^0.13.2.20250111"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "1.5.3"
