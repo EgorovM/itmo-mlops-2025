@@ -3,8 +3,8 @@
 from mlops.core import add
 
 
-def test_add():
+def test_add() -> None:
     """Test add function."""
     assert add(1, 2) == 3
     assert add(-1, 1) == 0
-    assert add(0, 0) == 0 
+    assert add(0, 0) == 0
