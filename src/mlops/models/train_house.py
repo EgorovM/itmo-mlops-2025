@@ -1,16 +1,25 @@
 """Train models on House Price dataset."""
 import json
 from pathlib import Path
+from typing import Dict, Union
 
 import joblib
 import numpy as np
 import pandas as pd
+from sklearn.base import BaseEstimator
 from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
 from sklearn.linear_model import ElasticNet
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 
-def train_and_evaluate(model, X_train, y_train, X_val, y_val, model_name: str) -> dict:
+def train_and_evaluate(
+    model: BaseEstimator,
+    X_train: pd.DataFrame,
+    y_train: pd.Series,
+    X_val: pd.DataFrame,
+    y_val: pd.Series,
+    model_name: str,
+) -> Dict[str, Union[str, float]]:
     """Train model and evaluate its performance.
 
     Args:
@@ -31,7 +40,7 @@ def train_and_evaluate(model, X_train, y_train, X_val, y_val, model_name: str) -
     y_pred = model.predict(X_val)
 
     # Calculate metrics
-    metrics = {
+    metrics: Dict[str, Union[str, float]] = {
         "model_name": model_name,
         "mse": float(mean_squared_error(y_val, y_pred)),
         "rmse": float(np.sqrt(mean_squared_error(y_val, y_pred))),
@@ -42,7 +51,7 @@ def train_and_evaluate(model, X_train, y_train, X_val, y_val, model_name: str) -
     return metrics
 
 
-def main():
+def main() -> None:
     """Train different models on House Price dataset."""
     # Setup paths
     data_dir = Path("data")

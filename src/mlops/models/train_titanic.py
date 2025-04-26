@@ -1,15 +1,24 @@
 """Train models on Titanic dataset."""
 import json
 from pathlib import Path
+from typing import Dict, Union
 
 import joblib
 import pandas as pd
+from sklearn.base import BaseEstimator
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
 
-def train_and_evaluate(model, X_train, y_train, X_val, y_val, model_name: str) -> dict:
+def train_and_evaluate(
+    model: BaseEstimator,
+    X_train: pd.DataFrame,
+    y_train: pd.Series,
+    X_val: pd.DataFrame,
+    y_val: pd.Series,
+    model_name: str,
+) -> Dict[str, Union[str, float]]:
     """Train model and evaluate its performance.
 
     Args:
@@ -30,7 +39,7 @@ def train_and_evaluate(model, X_train, y_train, X_val, y_val, model_name: str) -
     y_pred = model.predict(X_val)
 
     # Calculate metrics
-    metrics = {
+    metrics: Dict[str, Union[str, float]] = {
         "model_name": model_name,
         "accuracy": float(accuracy_score(y_val, y_pred)),
         "precision": float(precision_score(y_val, y_pred)),
@@ -41,7 +50,7 @@ def train_and_evaluate(model, X_train, y_train, X_val, y_val, model_name: str) -
     return metrics
 
 
-def main():
+def main() -> None:
     """Train different models on Titanic dataset."""
     # Setup paths
     data_dir = Path("data")

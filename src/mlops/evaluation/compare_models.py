@@ -1,7 +1,7 @@
 """Compare model results and generate report."""
 import json
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, cast
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -18,7 +18,7 @@ def load_metrics(metrics_file: Path) -> List[Dict[str, Any]]:
         List of metrics dictionaries
     """
     with open(metrics_file, "r") as f:
-        return json.load(f)
+        return cast(List[Dict[str, Any]], json.load(f))
 
 
 def create_comparison_plots(
