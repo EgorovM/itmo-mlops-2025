@@ -1,0 +1,158 @@
+schema: '2.0'
+stages:
+  process_titanic:
+    cmd: python src/mlops/data/process_titanic.py
+    deps:
+    - path: data/raw/titanic_train.csv
+      hash: md5
+      md5: 2309cc5f04782ed9bb6016d9f4e381cf
+      size: 61194
+    - path: src/mlops/data/process_titanic.py
+      hash: md5
+      md5: 20bbd9f665ab5300b0340079ea06400d
+      size: 3490
+    outs:
+    - path: data/processed/titanic_train.csv
+      hash: md5
+      md5: 52102b48f714dda1655079f362578c7b
+      size: 54178
+    - path: data/processed/titanic_val.csv
+      hash: md5
+      md5: 771b21ff69fd7adb302c7bf1a0939d02
+      size: 13698
+  process_house:
+    cmd: python src/mlops/data/process_house.py
+    deps:
+    - path: data/raw/house_train.csv
+      hash: md5
+      md5: 80ccab65fb115cbad143dbbd2bcd5577
+      size: 460676
+    - path: src/mlops/data/process_house.py
+      hash: md5
+      md5: 0001b90f3051cdd656d5b017374c98e1
+      size: 3715
+    outs:
+    - path: data/processed/house_train.csv
+      hash: md5
+      md5: 943ec4c959cca379e0938b37b53dde7c
+      size: 1058341
+    - path: data/processed/house_val.csv
+      hash: md5
+      md5: 5861329b76553819b4d52620d729a21d
+      size: 265199
+  train_titanic:
+    cmd: python src/mlops/models/train_titanic.py
+    deps:
+    - path: data/processed/titanic_train.csv
+      hash: md5
+      md5: 52102b48f714dda1655079f362578c7b
+      size: 54178
+    - path: data/processed/titanic_val.csv
+      hash: md5
+      md5: 771b21ff69fd7adb302c7bf1a0939d02
+      size: 13698
+    - path: src/mlops/models/train_titanic.py
+      hash: md5
+      md5: 67b23305fb3431891eaba978b98598bb
+      size: 3020
+    outs:
+    - path: metrics/titanic_metrics.json
+      hash: md5
+      md5: f1ddeee3b9d580f492792c392e5f64bd
+      size: 599
+    - path: models/trained/titanic_gradient_boosting.pkl
+      hash: md5
+      md5: 6197061d57a51d1f583e12c5a6c7b0c3
+      size: 178076
+    - path: models/trained/titanic_logistic_regression.pkl
+      hash: md5
+      md5: 5eca4d56a403b476019581a8d7c85646
+      size: 1375
+    - path: models/trained/titanic_random_forest.pkl
+      hash: md5
+      md5: 63a6baf6143ec5d1715b09fc67ad010a
+      size: 421385
+  train_house:
+    cmd: python src/mlops/models/train_house.py
+    deps:
+    - path: data/processed/house_train.csv
+      hash: md5
+      md5: 943ec4c959cca379e0938b37b53dde7c
+      size: 1058341
+    - path: data/processed/house_val.csv
+      hash: md5
+      md5: 5861329b76553819b4d52620d729a21d
+      size: 265199
+    - path: src/mlops/models/train_house.py
+      hash: md5
+      md5: 87cf16f299346ceda5a0bf44ee4c5e11
+      size: 3018
+    outs:
+    - path: metrics/house_metrics.json
+      hash: md5
+      md5: d4ca74a2d4c9885c3d253fe34964a396
+      size: 575
+    - path: models/trained/house_elastic_net.pkl
+      hash: md5
+      md5: 7c5b3b587ad4d079857c1deb61c293a9
+      size: 2847
+    - path: models/trained/house_gradient_boosting.pkl
+      hash: md5
+      md5: 56d9a800269c13b5cde25ada655abcaf
+      size: 542476
+    - path: models/trained/house_random_forest.pkl
+      hash: md5
+      md5: 67223c2ffeff6a5e2ab0379e1443f3b2
+      size: 4855089
+  compare_models:
+    cmd: python src/mlops/evaluation/compare_models.py
+    deps:
+    - path: metrics/house_metrics.json
+      hash: md5
+      md5: d4ca74a2d4c9885c3d253fe34964a396
+      size: 575
+    - path: metrics/titanic_metrics.json
+      hash: md5
+      md5: f1ddeee3b9d580f492792c392e5f64bd
+      size: 599
+    - path: src/mlops/evaluation/compare_models.py
+      hash: md5
+      md5: 5d60e89ec14990bc4717c687aed71031
+      size: 3947
+    outs:
+    - path: docs/model-comparison/House_mae_comparison.png
+      hash: md5
+      md5: 1a74f271deb05ea5df303452e1a631f8
+      size: 26877
+    - path: docs/model-comparison/House_mse_comparison.png
+      hash: md5
+      md5: 9404c6e948a152b6659d6840e5b263f5
+      size: 28271
+    - path: docs/model-comparison/House_r2_comparison.png
+      hash: md5
+      md5: 0faa818a762ac329002638fd7d6424be
+      size: 25363
+    - path: docs/model-comparison/House_rmse_comparison.png
+      hash: md5
+      md5: 8f52054057cea65709cc8aec1f1d1e0e
+      size: 26056
+    - path: docs/model-comparison/Titanic_accuracy_comparison.png
+      hash: md5
+      md5: 674e785747c08d5bc64752692503df20
+      size: 33324
+    - path: docs/model-comparison/Titanic_f1_comparison.png
+      hash: md5
+      md5: e784be6d772a7c51fb9db1d7a969c7dc
+      size: 28910
+    - path: docs/model-comparison/Titanic_precision_comparison.png
+      hash: md5
+      md5: 9a3a6632556cf21e2d594cd10213f2da
+      size: 32722
+    - path: docs/model-comparison/Titanic_recall_comparison.png
+      hash: md5
+      md5: 9036f7f90df70af88b49db0dc5ddf037
+      size: 30486
+    - path: docs/model-comparison/model_comparison.md
+      hash: md5
+      md5: 9aa3227b9c53f43ff6e7619de5f6716a
+      size: 1037

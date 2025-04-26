@@ -1,0 +1,23 @@
+[
+    {
+        "model_name": "random_forest",
+        "accuracy": 0.8044692737430168,
+        "precision": 0.7931034482758621,
+        "recall": 0.6666666666666666,
+        "f1": 0.7244094488188977
+    },
+    {
+        "model_name": "gradient_boosting",
+        "accuracy": 0.7988826815642458,
+        "precision": 0.8,
+        "recall": 0.6376811594202898,
+        "f1": 0.7096774193548387
+    },
+    {
+        "model_name": "logistic_regression",
+        "accuracy": 0.8100558659217877,
+        "precision": 0.7966101694915254,
+        "recall": 0.6811594202898551,
+        "f1": 0.734375
+    }
+]

@@ -1,0 +1,72 @@
+stages:
+  process_titanic:
+    cmd: python src/mlops/data/process_titanic.py
+    deps:
+      - src/mlops/data/process_titanic.py
+      - data/raw/titanic_train.csv
+    outs:
+      - data/processed/titanic_train.csv
+      - data/processed/titanic_val.csv
+
+  process_house:
+    cmd: python src/mlops/data/process_house.py
+    deps:
+      - src/mlops/data/process_house.py
+      - data/raw/house_train.csv
+    outs:
+      - data/processed/house_train.csv
+      - data/processed/house_val.csv
+
+  train_titanic:
+    cmd: python src/mlops/models/train_titanic.py
+    deps:
+      - src/mlops/models/train_titanic.py
+      - data/processed/titanic_train.csv
+      - data/processed/titanic_val.csv
+    outs:
+      - models/trained/titanic_random_forest.pkl
+      - models/trained/titanic_gradient_boosting.pkl
+      - models/trained/titanic_logistic_regression.pkl
+    metrics:
+      - metrics/titanic_metrics.json:
+          cache: false
+
+  train_house:
+    cmd: python src/mlops/models/train_house.py
+    deps:
+      - src/mlops/models/train_house.py
+      - data/processed/house_train.csv
+      - data/processed/house_val.csv
+    outs:
+      - models/trained/house_random_forest.pkl
+      - models/trained/house_gradient_boosting.pkl
+      - models/trained/house_elastic_net.pkl
+    metrics:
+      - metrics/house_metrics.json:
+          cache: false
+
+  compare_models:
+    cmd: python src/mlops/evaluation/compare_models.py
+    deps:
+      - src/mlops/evaluation/compare_models.py
+      - metrics/titanic_metrics.json
+      - metrics/house_metrics.json
+    outs:
+      - docs/model-comparison/model_comparison.md
+    plots:
+      - docs/model-comparison/Titanic_accuracy_comparison.png:
+          cache: false
+      - docs/model-comparison/Titanic_precision_comparison.png:
+          cache: false
+      - docs/model-comparison/Titanic_recall_comparison.png:
+          cache: false
+      - docs/model-comparison/Titanic_f1_comparison.png:
+          cache: false
+      - docs/model-comparison/House_mse_comparison.png:
+          cache: false
+      - docs/model-comparison/House_rmse_comparison.png:
+          cache: false
+      - docs/model-comparison/House_mae_comparison.png:
+          cache: false
+      - docs/model-comparison/House_r2_comparison.png:
+          cache: false 

@@ -35,12 +35,6 @@ plugins:
             show_source: true
             show_root_heading: true
             heading_level: 2
-  - gen-files:
-      scripts:
-        - docs/gen_ref_pages.py
-  - mkdocs-simple-hooks:
-      hooks:
-        on_post_build: "docs.hooks:copy_readme_hook"
 
 nav:
   - Home: index.md
@@ -54,6 +48,7 @@ nav:
     - Data Processing: ml-pipeline/data-processing.md
     - Model Training: ml-pipeline/model-training.md
     - Model Evaluation: ml-pipeline/model-evaluation.md
+    - Model Comparison: model-comparison/model_comparison.md
   - Development:
     - Contributing: development/contributing.md
     - Workflow: development/workflow.md
