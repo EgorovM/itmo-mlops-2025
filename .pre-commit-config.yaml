@@ -3,16 +3,22 @@ repos:
     rev: v4.5.0
     hooks:
       - id: trailing-whitespace
+        stages: [commit]
       - id: end-of-file-fixer
+        stages: [commit]
       - id: check-yaml
+        stages: [commit]
       - id: check-added-large-files
+        stages: [commit]
       - id: check-toml
+        stages: [commit]
 
   - repo: https://github.com/psf/black
     rev: 23.12.1
     hooks:
       - id: black
         language_version: python3.11
+        stages: [commit]
 
   - repo: https://github.com/pycqa/flake8
     rev: 7.0.0
@@ -21,16 +27,22 @@ repos:
         additional_dependencies:
           - flake8-docstrings
           - flake8-quotes
+        stages: [commit]
 
   - repo: https://github.com/pycqa/isort
     rev: 5.13.2
     hooks:
       - id: isort
         args: ["--profile", "black"]
+        stages: [commit]
 
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.8.0
+  - repo: local
     hooks:
       - id: mypy
-        additional_dependencies: [types-all]
+        name: mypy
+        entry: poetry run mypy
+        language: system
+        types: [python]
+        require_serial: true
         exclude: ^tests/
+        stages: [commit]
