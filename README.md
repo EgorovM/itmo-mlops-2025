@@ -10,11 +10,63 @@ This repository contains MLOps course homework implementations following modern 
 ├── docs/              # Documentation
 ├── tests/             # Test files
 ├── .github/           # GitHub Actions workflows
+├── data/             # Data directory (DVC-tracked)
+│   ├── raw/          # Raw data
+│   ├── interim/      # Intermediate data
+│   └── processed/    # Processed data
+├── models/           # Model directory (DVC-tracked)
+│   ├── trained/      # Trained models
+│   └── evaluation/   # Model evaluation results
 ├── Dockerfile        # Container configuration
 ├── docker-compose.yml # Local development setup
 ├── pyproject.toml    # Poetry dependency management
+├── dvc.yaml         # DVC pipeline configuration
+├── params.yaml      # Model parameters
 └── .pre-commit-config.yaml # Code quality tools
 ```
+
+## Data Version Control
+
+We use [DVC (Data Version Control)](https://dvc.org/) for managing our ML pipeline:
+
+1. **Data Management**:
+   - Raw data versioning
+   - Processed datasets tracking
+   - Model artifacts versioning
+
+2. **ML Pipeline**:
+   - Data processing pipeline
+   - Model training pipeline
+   - Evaluation pipeline
+
+3. **Experiment Tracking**:
+   - Parameter versioning
+   - Metric tracking
+   - Model comparison
+
+### DVC Workflow
+
+```bash
+# Initialize DVC
+dvc init
+
+# Add and track data
+dvc add data/raw/dataset.csv
+
+# Run pipelines
+dvc repro
+
+# Push to remote storage
+dvc push
+
+# Pull from remote storage
+dvc pull
+
+# Compare experiments
+dvc exp show
+```
+
+For detailed documentation about our ML pipeline and DVC usage, see our [documentation](https://egorovm.github.io/itmo-mlops-2025/).
 
 ## Development Workflow
 
