@@ -36,11 +36,18 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install poetry
+          pip install poetry pre-commit
           poetry install
+
+      - name: Run pre-commit
+        run: |
+          pre-commit install
+          pre-commit run --all-files
 
       - name: Setup Pages
         uses: actions/configure-pages@v3
+        with:
+          enablement: true
 
       - name: Build documentation
         run: |
