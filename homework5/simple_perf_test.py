@@ -1,119 +1,188 @@
+"""Module for performing simple performance tests on ML models."""
+
+import concurrent.futures
+import statistics
 import time
+from typing import Dict, List, Optional
+
 import numpy as np
 import pandas as pd
 from tritonclient.http import InferenceServerClient, InferInput, InferRequestedOutput
 
 
-def get_client():
+def get_client() -> InferenceServerClient:
+    """Get a Triton inference server client.
+
+    Returns:
+        InferenceServerClient: A configured client instance.
+    """
     return InferenceServerClient(url="localhost:8080")
 
 
-def prepare_sample_data():
-    """Prepare sample data for performance testing"""
-    np.random.seed(42)
-    data = np.random.randn(50, 10).astype(np.float32)
-    return data
+def prepare_request(model_name: str, data: np.ndarray) -> Dict:
+    """Prepare a request for the inference server.
+
+    Args:
+        model_name: Name of the model to use for inference.
+        data: Input data for the model.
+
+    Returns:
+        Dictionary containing the prepared request parameters.
+    """
+    inputs = []
+    inputs.append(InferInput("input__0", data.shape, "FP32"))
+    inputs[0].set_data_from_numpy(data)
+
+    outputs = []
+    outputs.append(InferRequestedOutput("output__0"))
+
+    return {
+        "model_name": model_name,
+        "inputs": inputs,
+        "outputs": outputs,
+    }
 
 
-def test_model_performance(model_name, client, data, num_requests=100):
-    """Test model performance with sequential requests"""
-    print(f"\nTesting {model_name} with {num_requests} requests...")
-    
-    latencies = []
-    successful_requests = 0
-    failed_requests = 0
-    
-    for i in range(num_requests):
-        # Random batch size between 1 and 4
-        batch_size = np.random.randint(1, 5)
-        indices = np.random.choice(len(data), size=batch_size, replace=True)
-        batch = data[indices]
-        
-        input_data = InferInput("input__0", batch.shape, "FP32")
-        input_data.set_data_from_numpy(batch)
-        outputs = [InferRequestedOutput("output__0")]
-        
+def worker(model_name: str, data: np.ndarray) -> Dict:
+    """Worker function for processing inference requests.
+
+    Args:
+        model_name: Name of the model to use for inference.
+        data: Input data for the model.
+
+    Returns:
+        Dictionary containing inference results and timing information.
+    """
+    client = get_client()
+    request = prepare_request(model_name, data)
+
+    start_time = time.time()
+    client.infer(**request)
+    end_time = time.time()
+
+    return {
+        "latency": end_time - start_time,
+        "timestamp": end_time,
+        "success": True,
+    }
+
+
+def performance_test(
+    model_name: str,
+    concurrency_levels: Optional[List[int]] = None,
+    test_duration: int = 60,
+) -> Dict[int, Dict[str, float]]:
+    """Run performance tests for a model with different concurrency levels.
+
+    Args:
+        model_name: Name of the model to test.
+        concurrency_levels: List of concurrency levels to test.
+        test_duration: Duration of each test in seconds.
+
+    Returns:
+        Dictionary containing performance metrics for each concurrency level.
+    """
+    if concurrency_levels is None:
+        concurrency_levels = [1, 2, 4, 8, 16]
+
+    # Load test data
+    df = pd.read_csv("data/test.csv")
+    X = df.drop("Survived", axis=1).astype(np.float32).values
+
+    results = {}
+
+    for concurrency in concurrency_levels:
+        print(f"\nTesting with concurrency: {concurrency}")
         start_time = time.time()
-        try:
-            response = client.infer(model_name, inputs=[input_data], outputs=outputs)
-            end_time = time.time()
-            
-            latency = (end_time - start_time) * 1000  # milliseconds
-            latencies.append(latency)
-            successful_requests += 1
-            
-        except Exception as e:
-            end_time = time.time()
-            failed_requests += 1
-            print(f"  Request {i+1} failed: {e}")
-    
-    if latencies:
-        return {
-            'model_name': model_name,
-            'total_requests': num_requests,
-            'successful_requests': successful_requests,
-            'failed_requests': failed_requests,
-            'success_rate': successful_requests / num_requests * 100,
-            'avg_latency_ms': np.mean(latencies),
-            'min_latency_ms': np.min(latencies),
-            'max_latency_ms': np.max(latencies),
-            'p50_latency_ms': np.percentile(latencies, 50),
-            'p95_latency_ms': np.percentile(latencies, 95),
-            'p99_latency_ms': np.percentile(latencies, 99),
-            'total_time_ms': sum(latencies),
-            'throughput_rps': successful_requests / (sum(latencies) / 1000) if sum(latencies) > 0 else 0
-        }
-    else:
-        return {
-            'model_name': model_name,
-            'total_requests': num_requests,
-            'successful_requests': 0,
-            'failed_requests': failed_requests,
-            'success_rate': 0,
-            'error': 'All requests failed'
-        }
+        latencies = []
+        request_count = 0
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=concurrency) as executor:
+            futures = []
+            while time.time() - start_time < test_duration:
+                if len(futures) < concurrency:
+                    future = executor.submit(worker, model_name, X[0:1])
+                    futures.append(future)
+
+                done, futures = concurrent.futures.wait(
+                    futures, timeout=0.1, return_when=concurrent.futures.FIRST_COMPLETED
+                )
+
+                for future in done:
+                    try:
+                        result = future.result()
+                        if result["success"]:
+                            latencies.append(result["latency"])
+                            request_count += 1
+                    except Exception as e:
+                        print(f"Request failed: {e}")
+
+        test_duration_actual = time.time() - start_time
+
+        if latencies:
+            avg_latency = statistics.mean(latencies) * 1000  # Convert to ms
+            throughput = request_count / test_duration_actual
+
+            results[concurrency] = {
+                "avg_latency_ms": avg_latency,
+                "throughput_rps": throughput,
+                "total_requests": request_count,
+            }
+
+            print(f"Average latency: {avg_latency:.2f} ms")
+            print(f"Throughput: {throughput:.2f} requests/second")
+            print(f"Total requests: {request_count}")
+        else:
+            print("No successful requests completed")
+
+    return results
 
 
 def main():
-    print("Starting simple performance test...")
-    
-    client = get_client()
-    data = prepare_sample_data()
-    
+    """Run the performance testing pipeline."""
     models = ["titanic_logistic_regression", "titanic_random_forest"]
-    results = []
-    
+
+    all_results = {}
+
     for model in models:
         try:
-            result = test_model_performance(model, client, data, num_requests=50)
-            results.append(result)
-            
-            print(f"\nResults for {model}:")
-            print(f"  Success rate: {result['success_rate']:.1f}%")
-            print(f"  Average latency: {result['avg_latency_ms']:.2f} ms")
-            print(f"  P95 latency: {result['p95_latency_ms']:.2f} ms")
-            print(f"  Throughput: {result['throughput_rps']:.2f} requests/second")
-            
+            results = performance_test(model, test_duration=5)  # Reduced duration
+            all_results[model] = results
         except Exception as e:
             print(f"Error testing {model}: {e}")
-            results.append({
-                'model_name': model,
-                'error': str(e)
-            })
-    
-    # Save results
-    if results:
-        df = pd.DataFrame(results)
-        df.to_csv('performance_report.csv', index=False)
-        print(f"\nPerformance report saved to performance_report.csv")
-        
+
+    # Save detailed results to CSV
+    performance_data = []
+
+    for model, concurrency_results in all_results.items():
+        for concurrency, metrics in concurrency_results.items():
+            row = {"model_name": model, "concurrency": concurrency, **metrics}
+            performance_data.append(row)
+
+    if performance_data:
+        df = pd.DataFrame(performance_data)
+        df.to_csv("performance_report.csv", index=False)
+        print("Detailed performance report saved to performance_report.csv")
+
+        # Print summary
         print("\n=== PERFORMANCE SUMMARY ===")
-        for result in results:
-            if 'error' not in result:
-                print(f"{result['model_name']}:")
-                print(f"  Throughput: {result['throughput_rps']:.2f} RPS")
-                print(f"  Average latency: {result['avg_latency_ms']:.2f} ms")
+        for model in models:
+            model_data = df[df["model_name"] == model]
+            if not model_data.empty:
+                best_throughput = model_data["throughput_rps"].max()
+                best_concurrency = model_data.loc[
+                    model_data["throughput_rps"].idxmax(), "concurrency"
+                ]
+                avg_latency_at_best = model_data.loc[
+                    model_data["throughput_rps"].idxmax(), "avg_latency_ms"
+                ]
+
+                print(f"{model}:")
+                print(
+                    f"  Best throughput: {best_throughput:.2f} RPS at concurrency {best_concurrency}"
+                )
+                print(f"  Latency at best throughput: {avg_latency_at_best:.2f} ms")
 
 
 if __name__ == "__main__":
-    main() 
+    main()
