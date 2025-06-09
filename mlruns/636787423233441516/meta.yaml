@@ -1,0 +1,6 @@
+artifact_location: file:///Users/michil/projects/itmo-mlops-2025/mlruns/636787423233441516
+creation_time: 1749485373946
+experiment_id: '636787423233441516'
+last_update_time: 1749485373946
+lifecycle_stage: active
+name: model_comparison

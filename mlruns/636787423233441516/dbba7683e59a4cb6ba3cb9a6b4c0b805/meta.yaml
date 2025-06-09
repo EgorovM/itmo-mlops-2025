@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/michil/projects/itmo-mlops-2025/mlruns/636787423233441516/dbba7683e59a4cb6ba3cb9a6b4c0b805/artifacts
+end_time: 1749485419417
+entry_point_name: ''
+experiment_id: '636787423233441516'
+lifecycle_stage: active
+run_id: dbba7683e59a4cb6ba3cb9a6b4c0b805
+run_name: LightGBM
+run_uuid: dbba7683e59a4cb6ba3cb9a6b4c0b805
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1749485402998
+status: 3
+tags: []
+user_id: michil
