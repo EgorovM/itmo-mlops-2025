@@ -1,0 +1,70 @@
+groups:
+  - name: ml_model_alerts
+    rules:
+      # Алерт при падении точности модели ниже 75%
+      - alert: ModelAccuracyLow
+        expr: ml_model_accuracy < 0.75
+        for: 1m
+        labels:
+          severity: warning
+          service: ml_models
+        annotations:
+          summary: "Model accuracy is too low"
+          description: "Model {{ $labels.model_name }} accuracy is {{ $value | humanizePercentage }} which is below 75% threshold"
+
+      # Алерт при высокой задержке (более 100ms)
+      - alert: ModelLatencyHigh
+        expr: ml_model_avg_latency_ms > 100
+        for: 2m
+        labels:
+          severity: warning
+          service: ml_models
+        annotations:
+          summary: "Model latency is too high"
+          description: "Model {{ $labels.model_name }} average latency is {{ $value }}ms which is above 100ms threshold"
+
+      # Алерт при падении F1-score ниже 70%
+      - alert: ModelF1ScoreLow
+        expr: ml_model_f1_score < 0.70
+        for: 1m
+        labels:
+          severity: critical
+          service: ml_models
+        annotations:
+          summary: "Model F1 score is critically low"
+          description: "Model {{ $labels.model_name }} F1 score is {{ $value | humanizePercentage }} which is below 70% threshold"
+
+      # Алерт при высоком проценте ошибок (более 5%)
+      - alert: ModelErrorRateHigh
+        expr: (ml_model_failed_requests / ml_model_total_requests) > 0.05
+        for: 1m
+        labels:
+          severity: critical
+          service: ml_models
+        annotations:
+          summary: "Model error rate is too high"
+          description: "Model {{ $labels.model_name }} error rate is {{ $value | humanizePercentage }} which is above 5% threshold"
+
+  - name: triton_server_alerts
+    rules:
+      # Алерт при недоступности Triton сервера
+      - alert: TritonServerDown
+        expr: up{job="triton"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          service: triton_server
+        annotations:
+          summary: "Triton server is down"
+          description: "Triton inference server has been down for more than 30 seconds"
+
+      # Алерт при высокой нагрузке на сервер
+      - alert: TritonServerHighLoad
+        expr: rate(nv_inference_request_success[5m]) > 100
+        for: 2m
+        labels:
+          severity: warning
+          service: triton_server
+        annotations:
+          summary: "Triton server high load"
+          description: "Triton server is handling more than 100 requests per second" 
