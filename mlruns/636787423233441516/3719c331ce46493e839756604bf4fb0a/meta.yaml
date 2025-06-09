@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/michil/projects/itmo-mlops-2025/mlruns/636787423233441516/3719c331ce46493e839756604bf4fb0a/artifacts
+end_time: 1749485402989
+entry_point_name: ''
+experiment_id: '636787423233441516'
+lifecycle_stage: active
+run_id: 3719c331ce46493e839756604bf4fb0a
+run_name: XGBoost
+run_uuid: 3719c331ce46493e839756604bf4fb0a
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1749485392968
+status: 3
+tags: []
+user_id: michil

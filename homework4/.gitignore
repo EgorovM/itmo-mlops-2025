@@ -1,0 +1,10 @@
+/data
+/models
+__pycache__/
+*.pyc
+.env
+mlruns/
+.pytest_cache/
+.coverage
+htmlcov/
+.DS_Store 
