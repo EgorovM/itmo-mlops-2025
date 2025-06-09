@@ -1,0 +1,68 @@
+global:
+  smtp_smarthost: 'localhost:587'
+  smtp_from: 'alertmanager@example.org'
+
+# The directory from which notification templates are read.
+templates:
+- '/etc/alertmanager/templates/*.tmpl'
+
+# The root route on which each incoming alert enters.
+route:
+  # The labels by which incoming alerts are grouped together. For example,
+  # multiple alerts coming in for cluster=A and alertname=LatencyHigh would
+  # be batched into a single group.
+  group_by: ['alertname', 'model_name']
+
+  # When a new group of alerts is created by an incoming alert, wait at
+  # least 'group_wait' to send the initial notification.
+  # This way ensures that you get multiple alerts for the same group that start
+  # firing shortly after another are batched together on the first 
+  # notification.
+  group_wait: 10s
+
+  # When the first notification was sent, wait 'group_interval' before
+  # sending a notification about new alerts that are added to a group of alerts.
+  group_interval: 10s
+
+  # If an alert has successfully been sent, wait 'repeat_interval' before
+  # resending them.
+  repeat_interval: 1h
+
+  # A default receiver
+  receiver: web.hook
+
+  # Routes for specific alerts
+  routes:
+  - match:
+      service: ml_models
+    receiver: telegram-ml-alerts
+  - match:
+      service: triton_server
+    receiver: telegram-system-alerts
+
+# Inhibition rules allow to mute a set of alerts given that another alert is
+# firing.
+inhibit_rules:
+- source_match:
+    severity: 'critical'
+  target_match:
+    severity: 'warning'
+  # Apply inhibition if the alertname is the same.
+  equal: ['alertname', 'model_name']
+
+receivers:
+- name: 'web.hook'
+  webhook_configs:
+  - url: 'http://127.0.0.1:5001/'
+
+# Telegram alerts for ML models
+- name: 'telegram-ml-alerts'
+  webhook_configs:
+  - url: 'http://telegram-bot:5000/webhook'
+    send_resolved: true
+
+# Telegram alerts for system
+- name: 'telegram-system-alerts'
+  webhook_configs:
+  - url: 'http://telegram-bot:5000/webhook'
+    send_resolved: true 

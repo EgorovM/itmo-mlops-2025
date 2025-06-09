@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  # Triton Inference Server
+  triton:
+    build: ./triton
+    ports:
+      - "8090:8000"  # HTTP inference
+      - "8091:8001"  # GRPC inference  
+      - "8092:8002"  # metrics
+    volumes:
+      - ./models:/models
+    command: ["tritonserver", "--model-repository=/models", "--strict-model-config=false", "--allow-http=true", "--http-port=8000", "--allow-grpc=true", "--grpc-port=8001", "--allow-metrics=true", "--metrics-port=8002"]
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  # Prometheus для сбора метрик
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - monitoring
+
+  # Alertmanager для уведомлений
+  alertmanager:
+    image: prom/alertmanager:latest
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - alertmanager_data:/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+      - '--web.external-url=http://localhost:9093'
+    networks:
+      - monitoring
+
+  # Telegram Bot для уведомлений
+  telegram-bot:
+    build: ./telegram_bot
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${CHAT_ID}
+    ports:
+      - "5001:5000"
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  # Grafana для визуализации
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_USERS_ALLOW_SIGN_UP=false
+    networks:
+      - monitoring
+
+  # Кастомный сервис для метрик ML модели
+  ml_metrics_service:
+    build: ./ml_metrics
+    ports:
+      - "8070:8080"
+    environment:
+      - TRITON_URL=http://triton:8000
+      - PROMETHEUS_PORT=8080
+    depends_on:
+      - triton
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+volumes:
+  prometheus_data:
+  grafana_data:
+  alertmanager_data:
+
+networks:
+  monitoring:
+    driver: bridge 

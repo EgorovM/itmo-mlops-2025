@@ -1,0 +1,32 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "alert_rules.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+scrape_configs:
+  # Triton Inference Server metrics
+  - job_name: 'triton'
+    static_configs:
+      - targets: ['triton:8002']
+    scrape_interval: 5s
+    metrics_path: '/metrics'
+
+  # Custom ML metrics service
+  - job_name: 'ml_metrics'
+    static_configs:
+      - targets: ['ml_metrics_service:8080']
+    scrape_interval: 15s
+    metrics_path: '/metrics'
+
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090'] 
